@@ -1,0 +1,86 @@
+name: Universal Android CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - "v*.*.*"   # para releases versionadas
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:   # ejecución manual desde GitHub Actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # 1. Regenerar wrapper si no existe o está roto
+      - name: Ensure Gradle Wrapper
+        run: |
+          if [ ! -f gradlew ]; then
+            echo "⚡ No se encontró gradlew, regenerando..."
+            curl -s -L https://services.gradle.org/distributions/gradle-8.2.1-bin.zip -o gradle.zip
+            unzip -q gradle.zip -d gradle-dist
+            gradle-dist/gradle-8.2.1/bin/gradle wrapper
+            rm -rf gradle.zip gradle-dist
+          else
+            echo "✔ Gradle Wrapper detectado."
+          fi
+
+      # 2. Corregir settings.gradle.kts si está roto
+      - name: Fix settings.gradle.kts
+        run: |
+          FILE="settings.gradle.kts"
+          if [ ! -f "$FILE" ]; then
+            echo 'rootProject.name = "app"' > "$FILE"
+            echo "✅ settings.gradle.kts creado desde cero"
+          else
+            sed -i 's/cms\.rootName/rootProject.name/g' "$FILE"
+            if ! grep -q "rootProject.name" "$FILE"; then
+              echo 'rootProject.name = "app"' >> "$FILE"
+            fi
+            echo "✅ settings.gradle.kts corregido"
+          fi
+
+      # 3. Dar permisos a gradlew
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      # 4. Compilar Debug siempre
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      # 5. Subir Debug APK como artifact
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      # 6. Si es un tag → compilar Release y crear Release en GitHub
+      - name: Build Release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Universal Android Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            app/build/outputs/apk/release/*.apk
