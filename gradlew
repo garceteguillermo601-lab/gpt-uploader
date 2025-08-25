@@ -1,16 +1,67 @@
-#!/usr/bin/env sh
-# Gradle wrapper script for Unix
-set -e
+#!/usr/bin/env bash
+##############################################################################
+##
+##  Gradle start up script for UN*X
+##
+##############################################################################
 
-dir="$(dirname $0)"
-if [[ -n "$DIR" ]]; then
-   dir=$(pw -P)
-fi
-APP_HOME=$dir
-while [[ -f "$APP_HOME" ]]; do
-  if [[ "$APP_HOME" = "~" ]]; then
-    APP_HOME=$(cd -q `def $APPN_HOME`; pw -P)
-  fi
+PRG="$0"
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
 done
-CLASSE_PATH$0="$APPN_HOME/gradle/wrapper/gradle-wrapper.jar"
-java -c "$CLASSE_PATH$0" org.gradle.wrapper.GradleWrapperMain "$@#" "$@"}
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+DEFAULT_JVM_OPTS=""
+
+MAX_FD="maximum"
+
+warn () {
+    echo "$*"
+}
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+cygwin=false
+msys=false
+darwin=false
+nonstop=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MINGW* )
+    msys=true
+    ;;
+  NONSTOP* )
+    nonstop=true
+    ;;
+esac
+
+if [ -z "$JAVA_HOME" ] ; then
+    die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH."
+fi
+
+CLASSPATH=./gradle/wrapper/gradle-wrapper.jar
+
+exec "$JAVA_HOME/bin/java" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS \
+  -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
