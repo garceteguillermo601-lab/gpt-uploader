@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+FILE="settings.gradle.kts"
+
+if grep -q "cms.rootName" "$FILE"; then
+  echo "⚡ Corrigiendo settings.gradle.kts..."
+  sed -i 's/cms\.rootName/rootProject.name/' "$FILE"
+  echo "✅ settings.gradle.kts corregido."
+else
+  echo "✔ settings.gradle.kts ya está correcto."
+fi
+
+echo "Contenido final:"
+cat "$FILE"
