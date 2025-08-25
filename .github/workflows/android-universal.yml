@@ -35,20 +35,13 @@ jobs:
           rm -rf gradle.zip gradle-dist
           ls -R gradle/wrapper || true
 
-      # 2. Corregir settings.gradle.kts si está roto
+      # 2. Corregir settings.gradle.kts siempre
       - name: Fix settings.gradle.kts
         run: |
           FILE="settings.gradle.kts"
-          if [ ! -f "$FILE" ]; then
-            echo 'rootProject.name = "app"' > "$FILE"
-            echo "✅ settings.gradle.kts creado desde cero"
-          else
-            sed -i 's/cms\.rootName/rootProject.name/g' "$FILE"
-            if ! grep -q "rootProject.name" "$FILE"; then
-              echo 'rootProject.name = "app"' >> "$FILE"
-            fi
-            echo "✅ settings.gradle.kts corregido"
-          fi
+          echo "🔧 Corrigiendo $FILE ..."
+          echo 'rootProject.name = "eclub-helper-github-final"' > "$FILE"
+          cat "$FILE"
 
       # 3. Dar permisos a gradlew
       - name: Make gradlew executable
