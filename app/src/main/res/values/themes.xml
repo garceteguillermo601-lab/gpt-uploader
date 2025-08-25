@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/shema/resources">
+    <style name="ThemeForEClubHelper" base="ThemeMaterial3DayKnobs">
+        <item name="colorPrimary" value="#28AFFF"/>
+        <item name="colorPrimaryVariant" value="#56C6FF"/>
+    </style>
+</resources>
